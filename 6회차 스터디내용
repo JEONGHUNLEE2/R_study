@@ -1,0 +1,179 @@
+ggplot2 패키지를 활용한 시각화
+	install.packages('ggplot2')
+	library(ggplot2)
+위에 쌓아간다는 느낌으로 그림을 그리는 느낌 
+
+
+점그래프 
+	ggplot(data1) + --------------------1. 도화지 그리기
+	  aes(x = gdpPercap) + ------------2. x축 지정
+	  aes(y = lifeExp) + ----------------3. y축 지정
+	  geom_point() + -----------------4. 나타낼 그림
+	  aes(color = continent) -----------5. 색 지정
+	  aes(shape = continent) ----------6. 모양 지정
+	  aes(size = pop) -----------------7. 크기 지정
+	  aes(alpha = continent) -----------------8. 투명도 지정
+
+전처리는 파이프라인으로 하다가, ggplot을 실행한 후부터는 +로 하는거 잊지않기!
+
+alpha 값도 aes안에 넣으면 변수로 인식해서 geom_point(),부분에 넣어주는게 좋음
+
+tip. windows() 화면을 하나 띄워서 작업, plots창을 작게 만들어놨을 때 오류가 날때도 있어서 새창으로 작업을 하기도함.
+
+아래와 같이 한줄로 입력가능 
+	data1 %>% ggplot(aes(x=gdpPercap, y=lifeExp, color=continent)) + geom_point()
+	data1 %>% ggplot(aes(x=gdpPercap, y=lifeExp)) + geom_point(color = "red")
+
+주의점 : 변수로 인식을 하게 된다. aes묵을때와 안묶을 때 주의 , 특정 color를 지정할 때는 aes밖에 입력! aes안에 입력하게 되면 변수로 인식하게 된다. 
+	ex) data1 %>% ggplot(aes(x=gdpPercap, y=lifeExp, color = "red")) + geom_point()
+
+	aes(shape = continent) 모양 지정
+	data1 %>% ggplot(aes(x=gdpPercap, y=lifeExp, color = continent)) + geom_point(shape = 3)
+특정 변수(지정값) 사용할 때 aes안에 넣고 안넣고를 주의하면 된다.
+ex) aes안에 shape = 3 넣으면 아무것도 안그려짐
+
+막대그래프
+	ggplot(data1) +  
+	  aes(x = continent) + --------- x축 지정
+	  geom_bar() + --------------- 막대그래프 그리기
+	  aes(fill = continent) + ------- 전체색
+	  scale_fill_brewer(palette='Set1') --팔레트 사용하기
+막대그래프는 color이 아닌 fill로 사용!***, 겉에만 칠해짐 color하면 
+
+*막대그래프 숫자넣기 geom_text
+
+	ggplot(data1) +  
+	  aes(x = continent) + # x축 지정
+	  aes(y = lifeExp) + # y축 지정
+	  geom_bar(stat = "identity") + #막대그래프 x,y축   
+  	  aes(fill = continent) # 전체색
+y축 기본은 count #x,y축 둘다 기준 지정할 때!***중요, 많이 실수하는 부분
+
+	gapminder %>%
+	  filter(year %in% c(2002,2007)) %>%
+	  group_by(continent,year) %>% 
+year빼버리면 아래 그래프 그릴때 나눠서 그릴 수 가 없음. 
+	  summarise(mean = mean(lifeExp)) %>%
+	  ggplot() +  
+	  aes(x = continent) +  
+	  aes(y = mean) +
+	  geom_bar(stat = "identity") +  
+	  aes(color = continent) +  
+	  aes(fill = continent) +
+	  facet_grid(~year) #특정 변수로 구분 
+‘facet_grid’ 이걸 안해주면 2002,2007 데이터가 누적되서 나옴 
+
+
+박스 그래프 geom_boxplot() : 데이터 분포를 보여주는 그래프 
+- 데이터 특성마다 이상치를 다뤄야하는 방법이 다르다. 
+- x축은 범주형
+ 
+	gapminder %>%
+	  ggplot(aes(x=continent, y= lifeExp, fill= continent)) + 
+	  geom_boxplot(alpha = 0.5)
+- 데이터 분포를 알려주는 그래프라서 데이터요약은 boxplot에선 안된다. 
+- 값이 1개가 되니까
+
+
+
+히스토그램 geom_boxplot()
+	gapminder %>%
+	  ggplot(aes(x=lifeExp)) + 
+	  geom_histogram() +
+	  facet_grid(~continent)
+직관적이라 좋긴하지만, 넓이, 기준에 따라 데이터분포가 다르게 보일 수 있음.
+
+
+
+선 그래프
+gapminder %>%
+  group_by(year,continent) %>%
+  dplyr::summarise(mean = mean(lifeExp)) %>%
+  ggplot(aes(x=year, y=mean , group=continent ,color= continent)) + geom_line()
+여러 그룹을 그리고 싶을 경우, 라인그래프 안에서 그룹까지 지정해주면 된다. 
+
+그래프 그리는 방법은 다 비슷, 설정만 다르게 !
+
+테마 변경하기
+install.packages("ggthemes")
+library(ggthemes)
+
+그래프 스타일 변경느낌!, 원하는 스타일로 사용
+여러가지 시도해보고 원하는거 사용! 
+	Graph + theme_bw() + ggtitle("Theme_bw") 
+	Graph + theme_classic() + ggtitle("Theme_classic")
+	.
+	.
+	.
+	.
+	Graph + theme_void() + ggtitle("Theme_vold") 
+
+
+범례제목 수정
+	ggplot(HR,aes(x=salary)) +  
+	  geom_bar(aes(fill=salary)) +
+	  theme_bw() +
+	  labs(fill = "범례 제목 수정(fill)")
+
+
+범례 테두리 설정
+Graph + theme(legend.position = "top")
+Graph + theme(legend.position = "bottom")
+.
+.
+.
+단점은 범례, 텍스트 조정은 원하는 위치에 딱 바로 입력하기는 힘들고 하나씩 쳐보면서 조정해야한다.
+
+축 변경
+이산형 - deiscreate()
+연속형 – continuous()
+
+	ggplot(HR,aes(x = salary)) +  
+	  geom_bar(aes(fill = salary)) +
+	  theme_bw() +
+	  scale_x_discrete(labels = c("하","중","상")) + 기존 low, medium, high 명칭 변경
+	  scale_y_continuous(breaks = seq(0,8000,by = 1000)) +
+	  scale_fill_discrete(labels = c("하","중","상")) -- 범례명칭
+
+
+색 변경 
+	ggplot(HR,aes(x = salary)) +  
+	  geom_bar(aes(fill = salary), alpha = 0.4) +
+	  theme_bw() +
+	  scale_fill_manual(values = c('red','royalblue','tan')) 
+
+
+글자크기,각도 수정
+# coord_flip() : 대칭 그래프
+변수가 여러개 있어서 그래프상 겹쳐보일 때 돌려서 보기도 함.
+# theme : 글자체 수정
+
+
+ggplot(HR,aes(x = salary)) +  
+  geom_bar(aes(fill = salary)) +
+  theme_bw() +
+  scale_fill_manual(values = c('red','royalblue','tan'))  +
+  coord_flip() +
+  theme(legend.position = 'none', 범례가 있고 없고
+        axis.text.x = element_text(size = 15,angle = 90),
+        axis.text.y = element_text(size = 15),
+        legend.text = element_text(size = 15))
+
+
+그래프에 평행선, 수직선, 대각선을 그릴 수 있는 명령어
+	ggplot(NULL) +
+	  geom_vline(xintercept = 10, 
+	             col = 'royalblue', size = 2) +
+	  geom_hline(yintercept = 10, linetype = 'dashed', 
+	             col = 'royalblue', size = 2) +
+	  geom_abline(intercept = 0, slope = 1, col = 'red',
+	              size = 2) +
+	  theme_bw()
+
+
+추가 유용한 그래프
+열지도(heatmap)
+	agg2 %>% 
+	  ggplot(aes(x=region, y=bmi_grp, fill=Q90)) +
+	  geom_tile()
+다른 그래프와 같지만 범주형 데이터가 2개이상이다 라는 부분만 다름
