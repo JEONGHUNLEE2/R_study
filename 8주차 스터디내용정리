@@ -3,7 +3,17 @@
   - 인과관계가 아닌 두 변수가 얼마나 연관이 되어있는가에 대한 강도를 숫자로 표현하는 방법
   - 기울기가 중요한게 아니고 선의 모양이 중요
   - 실무에서는 0.4만 되도 관계가 있는것으로 판단하기도 한다. 
-  
+        height<-c(164,175,166,185)
+        weight<-c(62,70,64,86)
+        cor(height,weight)  
+        -----------------------------------상관관계 시각화 그래프 패키지!
+        install.packages("corrplot")
+        library(corrplot)
+        .
+        .
+        corrplot(cor(acs2,use="na.or.complete"),method="color")
+        corrplot(cor(acs2,use="na.or.complete"),method="pie")
+        
  2. T검정 : 2개 집단의 평균비교 할 때 사용된다. 
   가. 단일표본 T 검정 : 특정 집단의 평균이 어떤 숫자와 같은지 다른지를 비교
   나. 독립표본 T 검정 : 서로 다른 두 개의 그룹 간의 평균 비교
@@ -12,12 +22,13 @@
      - 유의확률이 0.05보다 커야됨(주의**) / 유의확률 관련해서 헷갈리는 경우가 있음
      - 귀무가설 : 정규성을 갖는다
        대립가설 : 정규성을 갖지 않는다.
-
    3) 등분산성 검정 var.test()
      - 유의확률이 0.05보다 커야됨(주의**)
      - 귀무가설 : 등분산이다
        대립가설 : 등분산이 아니다.
-    
+       var.test(a,b) : p-value가 0.05 보다 높아서 등분산성이 있다고 볼 수 있음. 
+       t.test(a,b, var.equal = T) : t테스트 결과 p-value가 0.05보다 높음으로 차이가 없다고 볼수 있음. 
+
    *process 교재 251페이지 참고
     
    
@@ -31,8 +42,12 @@
   - 귀무가설 : 모든 집단들의 평균은 같다.
     대립가설 : 적어도 하나의 집단에서 평균에 차이가 난다
   
-   Duncan 검정
-   각 집단의 평균과 그룹을 제시
+    위 과정을 통해 적어도 하나의 집단의 평균이 차이가 난다고 결론이 나왔을 경우 사후검정을 실시
+    Duncan 검정 : 각 집단의 평균과 그룹을 제시
+    LDuncan(a1, "group")
+    TukeyHSD(aov(score~as.character(group),data=anova_data))
+    plot(TukeyHSD(aov(score~as.character(group),data=anova_data)))
+
   * 교재 259 페이지 참고
   
    2개의 집단이면 다르다고 판단 가능!
@@ -40,13 +55,20 @@
    
    
 범주형 통계분석
- 가. 카이제곱 chisq.test : 빈도 기반으로 검정
+ ***가. 카이제곱 chisq.test : 빈도 기반으로 검정
    1) 적합도 검정
     - 특정 확률을 따르고 있는지 확인
    2) 독립성 검정
     - 서로 연관이 있는지 없는지를 검정
     귀무가설 : 두 범주형 변수 X,Y 는 독립, 연관성이 없다.
     대립가설 : 두 범주형 변수 X,Y는 독립이 아니다. 연관성이 있다.
+     ex) 성별과 비만은 연관이 있을까?
+     chisq.test(acs$sex,acs$obesity,correct = F)
+     
+     p-value 값이 0.05보다 크므로 귀무가설(연관성이 없다) 채택
+     *correct : 카이제곱 분포를 이용할 떄는 연속성을 가지도록 비연속성을 교정해야할 필요하 있을 때 사용하는 방법
+      CrossTable(acs$sex,acs$obesity,chisq=T,prop.t=F)
+     여러 가지 내용 다 나오고 correct True 일 때와 False 일　때 까지 다 나옴
 
  나. Exact Test(fisher.test) : 기대도수가 5 이하인 cell이 25% 이상일 때 사용, 카이제곱 통계량이 불안정할 수 있으므로 Fisher의 정확 검정(Fisher’s Exact test)를 사용해 연관성 검정
 
@@ -56,8 +78,10 @@
      - 귀무가설 : 종속변수의 비율이 동일하다(일정)
      - 대립가설 : 종속변수의 비율이 동일하지 않다. (증가 / 감소 추세가 있다.)
  
+      colSums(xtab)
+      prop.trend.test(xtab[1,],colSums(xtab))
+      mosaicplot(t(xtab),col=c("deepskyblue", "brown2"))
 
- 라. 
-
+*****t검정, f겁정, 카이제곱이 가장 중요하다!!***
    
   
